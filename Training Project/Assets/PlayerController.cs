@@ -34,7 +34,9 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        //ADD: 
+        //only check inputs when playing
+        if (GameManager.Instance.State != GameState.Playing) return;
         //if Fire action was performed log it to the console
         if (_input.actions["Fire"].WasPressedThisFrame())
         {
@@ -69,6 +71,10 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        //ADD:
+        //only check inputs when playing
+        if (GameManager.Instance.State != GameState.Playing) return;
+        //...
         //set direction to the Move action's Vector2 value
         var dir = _input.actions["Move"].ReadValue<Vector2>();
 
