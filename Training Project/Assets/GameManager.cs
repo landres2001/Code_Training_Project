@@ -18,7 +18,12 @@ public enum GameState
 
 public class GameManager : Singleton<GameManager>
 {
+    public static event Action<GameState> OnBeforeStateChanged;
+    public static event Action<GameState> OnAfterStateChanged;
     public GameState State { get; private set; }
+
+    private GameState _previousState = GameState.Starting; //NEW
+
 
     void Start()
     {
@@ -28,8 +33,16 @@ public class GameManager : Singleton<GameManager>
 
     public void ChangeState(GameState newState)
     {
+        OnBeforeStateChanged?.Invoke(newState);
+        _previousState = State; //NEW: remember for un-pausing
         State = newState;
         Debug.Log("Changed Game State to    : " + newState);
+
+        //BEGIN NEW CODE
+        //if we were just paused, handle un-pausing
+        if (_previousState == GameState.Paused)
+            Time.timeScale = 1;
+        //END NEW CODE
 
         //This Game Manager can do high level manager stuff, itself.
         switch (newState)
@@ -40,16 +53,18 @@ public class GameManager : Singleton<GameManager>
             case GameState.Playing:
                 break;
             case GameState.Paused:
+                Time.timeScale = 0;
                 break;
             case GameState.FailScreen:
                 break;
             case GameState.VictoryDance:
                 break;
             default:
-                Debug.Log("GameState not handled: " + nameof(newState));
-                //throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
-                break;
+                //Debug.Log("GameState not handled: " + nameof(newState));
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
+                //break;
         }
+        OnAfterStateChanged?.Invoke(newState);
     }
 
     private IEnumerator HandleStarting()
@@ -58,6 +73,19 @@ public class GameManager : Singleton<GameManager>
         yield return new WaitForSeconds(2);
         ChangeState(GameState.Playing);
     }
+
+    //BEGIN NEW CODE
+    //Call to pause or un-pause based on current state
+    public void TogglePause()
+    {
+        //ChangeState toggles between Paused and previous state
+        if (State == GameState.Paused)
+            ChangeState(_previousState);
+        else
+            ChangeState(GameState.Paused);
+    }
+    //END NEW CODE
+
 }
 
 

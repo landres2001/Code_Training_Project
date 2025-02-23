@@ -34,6 +34,13 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        //BEGIN NEW CODE
+        if (_input.actions["Pause"].WasPressedThisFrame())
+        {
+            GameManager.Instance.TogglePause();
+        }
+        //END NEW CODE
         //ADD: 
         //only check inputs when playing
         if (GameManager.Instance.State != GameState.Playing) return;
